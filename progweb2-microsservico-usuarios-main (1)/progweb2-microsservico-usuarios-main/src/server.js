@@ -16,6 +16,7 @@ server.post("/usuarios/login", UsuariosController.login);
 server.put("/usuarios/alterar",authenticateToken, UsuariosController.alterar);
 server.get("/usuarios/produtos", authenticateToken, UsuariosController.getProdutoByUser)
 server.get("/usuarios/carrinho", authenticateToken, UsuariosController.getCarrinhoByUser)
+server.del("/usuarios", authenticateToken, UsuariosController.deletar)
 const PORT = 3002; 
 server.listen(PORT, () => { 
     console.log(`${server.name} rodando em ${server.url}`); 
