@@ -1,0 +1,188 @@
+### ============================================================
+### Testes do microsserviço de Pedidos
+### ------------------------------------------------------------
+### Como usar:
+### 1. Instale a extensão "REST Client" no VSCode
+###    (Huachao Mao - rest-client)
+### 2. Suba os mocks: `node mocks/server.js`
+### 3. Suba o serviço: `npm start`
+### 4. Clique em "Send Request" acima de cada bloco abaixo
+###
+### Os testes são pra serem executados NA ORDEM (1 → 18) porque
+### o teste 5 depende do carrinho criado no teste 2, etc.
+### ============================================================
+
+@base = http://localhost:3004
+
+### ===========================================================
+### 1. Listar pedidos (deve voltar [] na primeira vez)
+### ===========================================================
+GET {{base}}/pedidos
+
+### ===========================================================
+### 2. Criar carrinho pro usuário 1
+### -> chama mock-usuarios em :3002
+### ===========================================================
+POST {{base}}/carrinhos
+Content-Type: application/json
+
+{
+  "idUsuario": 1
+}
+
+### ===========================================================
+### 3. Buscar carrinho do usuário 1
+### ===========================================================
+GET {{base}}/carrinhos/1
+
+### ===========================================================
+### 4. Adicionar produto 1 (Mouse) no carrinho
+### -> chama mock-produtos em :3001
+### IMPORTANTE: troque o :id na URL pelo id do carrinho criado no passo 2
+### ===========================================================
+POST {{base}}/carrinhos/1/produto
+Content-Type: application/json
+
+{
+  "idProduto": 1,
+  "quantidade": 2
+}
+
+### ===========================================================
+### 5. Adicionar produto 5 (Joystick) no carrinho
+### ===========================================================
+POST {{base}}/carrinhos/1/produto
+Content-Type: application/json
+
+{
+  "idProduto": 5,
+  "quantidade": 1
+}
+
+### ===========================================================
+### 6. Confirmar carrinho com os 2 itens
+### ===========================================================
+GET {{base}}/carrinhos/1
+
+### ===========================================================
+### 7. FECHAR PEDIDO (o teste mais legal)
+### -> chama mock-usuarios + mock-estoque (verificar) + mock-estoque (baixar)
+### Olha os logs dos 4 terminais ao mesmo tempo
+### ===========================================================
+POST {{base}}/pedidos
+Content-Type: application/json
+
+{
+  "idUsuario": 1
+}
+
+### ===========================================================
+### 8. Listar pedidos do usuário 1
+### ===========================================================
+GET {{base}}/pedidos/usuario/1
+
+### ===========================================================
+### 9. Pegar status do pedido (troque o :id se preciso)
+### ===========================================================
+GET {{base}}/pedidos/1/status
+
+### ===========================================================
+### 10. Atualizar status pra "pago"
+### ===========================================================
+PATCH {{base}}/pedidos/1/status
+Content-Type: application/json
+
+{
+  "status": "pago"
+}
+
+### ===========================================================
+### 11. Cadastrar endereço de entrega no pedido
+### ===========================================================
+POST {{base}}/pedidos/1/endereco
+Content-Type: application/json
+
+{
+  "rua": "Rua Voluntários da Pátria",
+  "numero": "100",
+  "bairro": "Botafogo",
+  "cidade": "Rio de Janeiro",
+  "estado": "RJ",
+  "cep": "22270-000"
+}
+
+### ===========================================================
+### 12. Tracking do pedido
+### ===========================================================
+GET {{base}}/pedidos/1/tracking
+
+### ===========================================================
+### 13. Adicionar tracking via PUT
+### ===========================================================
+PUT {{base}}/pedidos/1
+Content-Type: application/json
+
+{
+  "tracking": "BR1234567890"
+}
+
+### ===========================================================
+### 14. Criar pagamento pro pedido
+### ===========================================================
+POST {{base}}/pagamentos
+Content-Type: application/json
+
+{
+  "pedidoId": 1,
+  "metodo": "cartao",
+  "bandeira": "visa",
+  "valor": 2498.80
+}
+
+### ===========================================================
+### 15. Aprovar pagamento
+### ===========================================================
+PATCH {{base}}/pagamentos/1/status
+Content-Type: application/json
+
+{
+  "status": "aprovado"
+}
+
+### ===========================================================
+### 16. Listar pagamentos do pedido
+### ===========================================================
+GET {{base}}/pagamentos/pedido/1
+
+### ===========================================================
+### 17. Filtros úteis
+### ===========================================================
+GET {{base}}/pedidos/status/pago
+
+###
+GET {{base}}/pagamentos/metodo/cartao
+
+###
+GET {{base}}/pagamentos/bandeira/visa
+
+### ===========================================================
+### 18. CASOS DE ERRO (pra mostrar que a validação funciona)
+### ===========================================================
+
+### usuário inexistente -> 404
+POST {{base}}/carrinhos
+Content-Type: application/json
+
+{ "idUsuario": 9999 }
+
+### produto inexistente -> 404
+POST {{base}}/carrinhos/1/produto
+Content-Type: application/json
+
+{ "idProduto": 9999, "quantidade": 1 }
+
+### pedido sem carrinho -> 400
+POST {{base}}/pedidos
+Content-Type: application/json
+
+{ "idUsuario": 2 }

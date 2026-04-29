@@ -1,0 +1,87 @@
+// Schema do microsserviço de Pedidos
+// Modelos: Carrinho, ItemCarrinho, Pedido, ItemPedido, Pagamento, Endereco
+//
+// Observação: idUsuario e idProduto são apenas Int (sem FK no banco),
+// pois Usuario e Produto vivem em outros microsserviços (outros bancos).
+// A "ligação" é feita via chamada HTTP, não via JOIN.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Carrinho {
+  id        Int            @id @default(autoincrement())
+  idUsuario Int            @unique
+  itens     ItemCarrinho[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+model ItemCarrinho {
+  id            Int      @id @default(autoincrement())
+  carrinhoId    Int
+  carrinho      Carrinho @relation(fields: [carrinhoId], references: [id], onDelete: Cascade)
+  idProduto     Int
+  quantidade    Int
+  precoUnitario Decimal  @db.Decimal(10, 2)
+  createdAt     DateTime @default(now())
+}
+
+model Pedido {
+  id         Int          @id @default(autoincrement())
+  idUsuario  Int
+  status     String       @default("pendente") @db.VarChar(30)
+  // status sugeridos: pendente, pago, enviado, entregue, cancelado
+  total      Decimal      @db.Decimal(10, 2)
+  tracking   String?      @db.VarChar(100)
+  itens      ItemPedido[]
+  pagamentos Pagamento[]
+  enderecos  Endereco[]
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+}
+
+model ItemPedido {
+  id            Int     @id @default(autoincrement())
+  pedidoId      Int
+  pedido        Pedido  @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+  idProduto     Int
+  quantidade    Int
+  precoUnitario Decimal @db.Decimal(10, 2)
+}
+
+model Pagamento {
+  id        Int        @id @default(autoincrement())
+  pedidoId  Int
+  pedido    Pedido     @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+  metodo    String     @db.VarChar(30) // cartao, pix, boleto
+  bandeira  String?    @db.VarChar(20) // visa, master, elo, etc.
+  status    String     @default("pendente") @db.VarChar(30) // pendente, aprovado, recusado, estornado
+  valor     Decimal    @db.Decimal(10, 2)
+  enderecos Endereco[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Endereco {
+  id          Int        @id @default(autoincrement())
+  pedidoId    Int?
+  pedido      Pedido?    @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+  pagamentoId Int?
+  pagamento   Pagamento? @relation(fields: [pagamentoId], references: [id], onDelete: Cascade)
+  rua         String     @db.VarChar(150)
+  numero      String     @db.VarChar(20)
+  bairro      String     @db.VarChar(100)
+  cidade      String     @db.VarChar(100)
+  estado      String     @db.VarChar(2)
+  cep         String     @db.VarChar(10)
+  complemento String?    @db.VarChar(100)
+  status      String     @default("ativo") @db.VarChar(30)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}

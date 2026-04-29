@@ -1,0 +1,26 @@
+Renan - produtos
+1- fetch produtos com estoque
+http://localhost:3001/produtos/2
+
+Roger - Usuarios
+2- login
+http://localhost:3002/usuarios/login
+
+3- carrinho usuário com pedidos 
+http://localhost:3002/usuarios/carrinho
+
+4- usuário com produtos 
+http://localhost:3002/usuarios/produtos
+
+
+Vitor - estoque
+5- estoque criar 
+http://localhost:3003/estoques
+
+Victor - Pedidos carrinho
+
+6 - criar pedido
+http://localhost:3004/pedidos
+
+7 - get carrinho 
+http://localhost:3004/carrinhos/2

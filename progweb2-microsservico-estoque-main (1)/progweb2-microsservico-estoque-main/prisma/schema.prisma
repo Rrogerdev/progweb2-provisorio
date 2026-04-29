@@ -1,0 +1,55 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model estoque {
+  id               Int      @id @default(autoincrement())
+  produtoId        Int      // Continua sem relação (Microsserviços)
+  
+  sectionId        Int
+  section          Section  @relation(fields: [sectionId], references: [id]) 
+
+  quantidade       Int      @default(0)
+  quantidadeMinima Int      @default(0)
+  observacao       String?  @db.Text
+  ativo            Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([produtoId, sectionId], name: "Estoque_produto_section_key")
+  @@index([produtoId])
+  @@index([sectionId])
+}
+
+model Warehouse {
+  id        Int      @id @default(autoincrement())
+  nome      String
+  floors    Floor[]
+}
+
+model Floor {
+  id          Int       @id @default(autoincrement())
+  nivel       String    
+  warehouseId Int
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
+  sections    Section[]
+}
+
+model Section {
+  id        Int       @id @default(autoincrement())
+  codigo    String    
+  floorId   Int
+  floor     Floor     @relation(fields: [floorId], references: [id])
+  estoques  estoque[] // A relação inversa aqui
+}

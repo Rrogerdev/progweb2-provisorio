@@ -1,0 +1,22 @@
+{
+  "name": "pedidos-service",
+  "version": "1.0.0",
+  "description": "Microsserviço de Pedidos, Carrinho e Pagamentos - Trabalho ProgWeb II",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "mocks": "node mocks/server.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev --name init"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "dotenv": "^16.4.5",
+    "node-fetch": "^2.7.0",
+    "restify": "^11.1.0"
+  },
+  "devDependencies": {
+    "prisma": "^5.22.0"
+  }
+}
